@@ -29,8 +29,16 @@ class UserServiceTest {
     @Autowired
     private NotaryRepository notaryRepository;
 
+    @Autowired
+    private com.enotary.repository.AppointmentSlotRepository slotRepository;
+
+    @Autowired
+    private com.enotary.repository.BookingRequestRepository bookingRepository;
+
     @BeforeEach
     void setUp() {
+        bookingRepository.deleteAll();
+        slotRepository.deleteAll();
         notaryRepository.deleteAll();
         userRepository.deleteAll();
     }
