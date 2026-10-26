@@ -34,16 +34,34 @@
                             <span class="badge bg-success"><i class="bi bi-heart-pulse-fill me-1"></i>Health</span>
                         </a>
                     </li>
-                    <li class="nav-item ms-lg-3">
+                    <!-- Authenticated User View -->
+                    <li class="nav-item ms-lg-3" th:if="${currentUser != null}">
+                        <span class="text-white small me-3" id="user-greeting">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <strong th:text="${currentUser.fullName}">User</strong> 
+                            <span class="badge bg-light text-primary ms-1" th:text="${currentUser.role}">CLIENT</span>
+                        </span>
+                        <a class="btn btn-outline-light btn-sm px-3" href="/logout" id="btn-logout">Logout</a>
+                    </li>
+                    <!-- Anonymous Guest View -->
+                    <li class="nav-item ms-lg-3" th:if="${currentUser == null}">
                         <a class="btn btn-outline-light btn-sm px-3" href="/login" id="btn-login">Login</a>
                     </li>
-                    <li class="nav-item ms-2">
+                    <li class="nav-item ms-2" th:if="${currentUser == null}">
                         <a class="btn btn-light btn-sm px-3 text-primary fw-bold" href="/register" id="btn-register">Register</a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+
+    <!-- Success banner if redirected after login -->
+    <div class="container mt-3" th:if="${param.loginSuccess}">
+        <div class="alert alert-success alert-dismissible fade show" role="alert" id="home-login-alert">
+            <i class="bi bi-check-circle-fill me-2"></i>Welcome back! You have logged in successfully.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
 
     <!-- Hero Section -->
     <header class="py-5 bg-white border-bottom shadow-sm">
