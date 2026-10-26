@@ -114,8 +114,7 @@ pipeline {
             echo "Pipeline completed successfully! Artifact packaged and deployed."
         }
         failure {
-            echo "Pipeline failed! Inspect logs and test reports."
-            archiveArtifacts artifacts: 'app-deployment.log', allowEmptyArchive: true
+            echo "Pipeline failed! Inspect console logs and test reports."
         }
     }
 }
