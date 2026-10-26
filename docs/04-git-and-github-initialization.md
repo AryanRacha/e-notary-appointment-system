@@ -3,6 +3,7 @@
 | Metadata | Details |
 | :--- | :--- |
 | **Project Name** | Containerized E-Notary Appointment System |
+| **GitHub Repository** | `https://github.com/AryanRacha/e-notary-appointment-system.git` |
 | **Coursework Reference** | `docs/devops-project-guidelines.ods` (Row 39) |
 | **Student** | Aryan Racha (Roll No: `23102C0055`) |
 | **Deliverables Covered** | Repository URL, README, Initial Commits, Issues & PR Templates, Branch Policy |

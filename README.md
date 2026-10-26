@@ -106,8 +106,8 @@ Progressive step-by-step documentation is maintained under [`docs/`](docs/):
 ### Build and Run
 ```bash
 # Clone the repository
-git clone <repo-url>
-cd devops-project
+git clone https://github.com/AryanRacha/e-notary-appointment-system.git
+cd e-notary-appointment-system
 
 # Compile the application
 ./mvnw clean compile
