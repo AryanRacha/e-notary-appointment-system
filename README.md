@@ -84,16 +84,16 @@ Progressive step-by-step documentation is maintained under [`docs/`](docs/):
 * [`docs/02-agile-planning-and-devops-workflow.md`](docs/02-agile-planning-and-devops-workflow.md) — User Stories, Sprint Backlog, DoD & Lifecycle Diagram
 * [`docs/03-requirements-architecture-and-setup.md`](docs/03-requirements-architecture-and-setup.md) — SRS, Use Case, Architecture, ER Models & API Spec
 * [`docs/04-git-and-github-initialization.md`](docs/04-git-and-github-initialization.md) — Branch Policies, Repo Config & Skeleton
-* `docs/05-feature-development-with-branching.md` — Feature 1 Branch, PR & Code Review
-* `docs/06-mvp-completion-and-collaboration.md` — 6-Feature MVP, Merge Conflict Resolution & Tagged Release
-* `docs/07-jenkins-ci-job.md` — Jenkins CI Job & Maven Artifact Archival
-* `docs/08-pipeline-as-code-and-deployment.md` — Declarative `Jenkinsfile` & Tomcat Deployment
-* `docs/09-selenium-testing-suite.md` — Selenium E2E Test Suite & Failure Screenshots
-* `docs/10-continuous-testing-in-jenkins.md` — Quality Gate & Defect Injection Demonstration
-* `docs/11-docker-container-lifecycle.md` — Multi-stage `Dockerfile` & Container Management
-* `docs/12-jenkins-docker-continuous-deployment.md` — Automated Docker Hub Pipeline
-* `docs/13-ansible-configuration-management.md` — Ansible Server Prerequisites Playbook
-* `docs/14-automated-provisioning-and-rollback.md` — Idempotent Node Provisioning & Rollback Demo
+* [`docs/05-feature-development-with-branching.md`](docs/05-feature-development-with-branching.md) — Feature 1 Branch, PR & Code Review
+* [`docs/06-mvp-completion-and-collaboration.md`](docs/06-mvp-completion-and-collaboration.md) — 6-Feature MVP, Merge Conflict Resolution & Tagged Release
+* [`docs/07-jenkins-ci-job.md`](docs/07-jenkins-ci-job.md) — Jenkins CI Job & Maven Artifact Archival
+* [`docs/08-pipeline-as-code-and-deployment.md`](docs/08-pipeline-as-code-and-deployment.md) — Declarative `Jenkinsfile` & Tomcat Deployment
+* [`docs/09-selenium-testing-suite.md`](docs/09-selenium-testing-suite.md) — Selenium E2E Test Suite & Failure Screenshots
+* [`docs/10-continuous-testing-in-jenkins.md`](docs/10-continuous-testing-in-jenkins.md) — Quality Gate & Defect Injection Demonstration
+* [`docs/11-docker-container-lifecycle.md`](docs/11-docker-container-lifecycle.md) — Multi-stage `Dockerfile` & Container Management
+* [`docs/12-jenkins-docker-continuous-deployment.md`](docs/12-jenkins-docker-continuous-deployment.md) — Automated Docker CD Pipeline & Registry Publishing
+* [`docs/13-ansible-configuration-management.md`](docs/13-ansible-configuration-management.md) — Ansible Server Prerequisites Playbook
+* [`docs/14-automated-provisioning-and-rollback.md`](docs/14-automated-provisioning-and-rollback.md) — Idempotent Node Provisioning & Rollback Demo
 
 ---
 
@@ -102,27 +102,48 @@ Progressive step-by-step documentation is maintained under [`docs/`](docs/):
 ### Prerequisites
 * **Java 17 LTS**
 * **Maven 3.9+** (or bundled `./mvnw`)
+* **Docker Engine 24+** (for containerized deployment)
+* **Ansible Core 2.15+** (for configuration management)
 
-### Build and Run
+### 1. Build and Run Standalone (Maven & Spring Boot)
 ```bash
 # Clone the repository
 git clone https://github.com/AryanRacha/e-notary-appointment-system.git
 cd e-notary-appointment-system
 
-# Compile the application
-./mvnw clean compile
-
-# Run automated tests
-./mvnw test
-
-# Package into an executable JAR
+# Compile and package executable fat JAR
 ./mvnw clean package
 
-# Run the Spring Boot application
-./mvnw spring-boot:run
+# Run the full test suite (35 Unit/Integration + 4 Selenium E2E tests)
+./mvnw test
+
+# Run the Spring Boot application on port 8080
+java -jar target/e-notary-appointment-system-1.0.0-SNAPSHOT.jar
 ```
 
 Access the application in your browser:
 * **Web Portal:** `http://localhost:8080/`
 * **H2 Console:** `http://localhost:8080/h2-console`
 * **Actuator Health:** `http://localhost:8080/actuator/health`
+
+### 2. Containerized Deployment (Docker)
+```bash
+# Build multi-stage hardened production image
+docker build -t e-notary-system:1.0.0 .
+
+# Run container on port 8082 with native healthcheck
+docker run -d --name e-notary-app -p 8082:8080 e-notary-system:1.0.0
+
+# Inspect health and logs
+docker ps --filter "name=e-notary-app"
+docker logs -f e-notary-app
+```
+
+### 3. Automated Configuration Management & Rollback (Ansible)
+```bash
+# Idempotent provisioning of version 1.0.0
+ansible-playbook -i ansible/inventory.ini ansible/playbook.yml -e version=1.0.0
+
+# Automated self-healing rollback to previous known-good version
+ansible-playbook -i ansible/inventory.ini ansible/rollback.yml
+```
