@@ -63,6 +63,10 @@ pipeline {
                 always {
                     junit testResults: 'target/surefire-reports/*.xml', allowEmptyResults: true
                 }
+                failure {
+                    echo "Tests failed! Archiving failure screenshots for diagnostic inspection..."
+                    archiveArtifacts artifacts: 'target/screenshots/*.png', allowEmptyArchive: true
+                }
             }
         }
 
