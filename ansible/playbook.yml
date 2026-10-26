@@ -1,0 +1,115 @@
+---
+- name: Automated Provisioning & Continuous Deployment of E-Notary System
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  vars:
+    app_name: "e-notary-system"
+    registry_url: "localhost:5000"
+    app_version: "{{ version | default('latest') }}"
+    target_image: "{{ registry_url }}/{{ app_name }}:{{ app_version }}"
+    container_name: "e-notary-production-container"
+    host_port: "{{ port | default(8082) }}"
+    container_port: 8080
+    app_environment: "{{ environment_name | default('production') }}"
+    backup_file: "/tmp/e-notary-active-image.txt"
+
+  tasks:
+    - name: "=== Task 1: Check Server Prerequisites ==="
+      block:
+        - name: Verify Docker CLI is available
+          ansible.builtin.command: docker --version
+          register: docker_check
+          changed_when: false
+
+        - name: Verify Docker Daemon connectivity
+          ansible.builtin.command: docker info
+          register: docker_info
+          changed_when: false
+
+        - name: Display Host & Runtime Verification
+          ansible.builtin.debug:
+            msg:
+              - "Host OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+              - "Docker: {{ docker_check.stdout }}"
+              - "Target Image: {{ target_image }}"
+              - "Target Port: {{ host_port }}"
+
+    - name: "=== Task 2: Inspect Active Container & Backup Current Version ==="
+      block:
+        - name: Check if container is currently running
+          ansible.builtin.command: "docker inspect --format {% raw %}'{{.Config.Image}}'{% endraw %} {{ container_name }}"
+          register: current_container_image
+          failed_when: false
+          changed_when: false
+
+        - name: Record running image tag for automated rollback capability
+          ansible.builtin.copy:
+            content: "{{ current_container_image.stdout }}"
+            dest: "{{ backup_file }}"
+            mode: '0644'
+          when: current_container_image.rc == 0 and current_container_image.stdout != ""
+          changed_when: false
+
+        - name: Check container health status if running
+          ansible.builtin.command: "curl -s http://localhost:{{ host_port }}/actuator/health"
+          register: current_health
+          failed_when: false
+          changed_when: false
+
+    - name: "=== Task 3: Determine Deployment Action (Idempotency Check) ==="
+      ansible.builtin.set_fact:
+        needs_deployment: >-
+          {{
+            current_container_image.rc != 0 or
+            current_container_image.stdout != target_image or
+            'UP' not in (current_health.stdout | default(''))
+          }}
+
+    - name: "=== Task 4: Pull Target Container Image ==="
+      ansible.builtin.command: "docker pull {{ target_image }}"
+      when: needs_deployment | bool
+      register: docker_pull_result
+      changed_when: "'Image is up to date' not in docker_pull_result.stdout"
+
+    - name: "=== Task 5: Deploy Container ==="
+      when: needs_deployment | bool
+      block:
+        - name: Stop and remove outdated or unhealthy container
+          ansible.builtin.command: "docker rm -f {{ container_name }}"
+          register: docker_rm
+          failed_when: false
+          changed_when: docker_rm.rc == 0
+
+        - name: Launch container with target version
+          ansible.builtin.command: >
+            docker run -d
+            --name {{ container_name }}
+            -p {{ host_port }}:{{ container_port }}
+            -e SPRING_PROFILES_ACTIVE={{ app_environment }}
+            --restart unless-stopped
+            {{ target_image }}
+          register: docker_run
+          changed_when: true
+
+    - name: "=== Task 6: Validate Application Health Check ==="
+      ansible.builtin.uri:
+        url: "http://localhost:{{ host_port }}/actuator/health"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: health_check
+      until: "health_check.status == 200 and 'UP' in health_check.content"
+      retries: 20
+      delay: 2
+      when: needs_deployment | bool
+
+    - name: "=== Task 7: Report Deployment Summary ==="
+      ansible.builtin.debug:
+        msg:
+          - "Status: {{ 'DEPLOYED (State Changed)' if (needs_deployment | bool) else 'IDEMPOTENT (No Changes Required)' }}"
+          - "Active Container: {{ container_name }}"
+          - "Image: {{ target_image }}"
+          - "Port: http://localhost:{{ host_port }}"
+          - "Health: UP"

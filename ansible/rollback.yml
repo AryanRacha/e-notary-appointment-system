@@ -1,0 +1,86 @@
+---
+- name: Automated Rollback for Containerized E-Notary System
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    app_name: "e-notary-system"
+    registry_url: "localhost:5000"
+    container_name: "e-notary-production-container"
+    host_port: "{{ port | default(8082) }}"
+    container_port: 8080
+    app_environment: "{{ environment_name | default('production') }}"
+    backup_file: "/tmp/e-notary-active-image.txt"
+
+  tasks:
+    - name: "=== Task 1: Determine Rollback Image ==="
+      block:
+        - name: Check for recorded backup image
+          ansible.builtin.stat:
+            path: "{{ backup_file }}"
+          register: backup_stat
+
+        - name: Read previous image from backup file
+          ansible.builtin.slurp:
+            src: "{{ backup_file }}"
+          register: backup_content
+          when: backup_stat.stat.exists and rollback_version is not defined
+
+        - name: Set target rollback image fact
+          ansible.builtin.set_fact:
+            target_rollback_image: >-
+              {{
+                (registry_url + '/' + app_name + ':' + rollback_version)
+                if (rollback_version is defined)
+                else (backup_content.content | b64decode | trim)
+              }}
+
+        - name: Verify a valid rollback target was identified
+          ansible.builtin.assert:
+            that:
+              - target_rollback_image is defined
+              - target_rollback_image | length > 0
+            fail_msg: "No previous image found in {{ backup_file }} and no rollback_version was provided."
+
+        - name: Display Rollback Plan
+          ansible.builtin.debug:
+            msg:
+              - "Triggering Automated Rollback..."
+              - "Restoring Known-Good Target: {{ target_rollback_image }}"
+              - "Host Port: {{ host_port }}"
+
+    - name: "=== Task 2: Terminate Unhealthy Container ==="
+      ansible.builtin.command: "docker rm -f {{ container_name }}"
+      register: rm_result
+      failed_when: false
+      changed_when: rm_result.rc == 0
+
+    - name: "=== Task 3: Launch Restored Known-Good Container ==="
+      ansible.builtin.command: >
+        docker run -d
+        --name {{ container_name }}
+        -p {{ host_port }}:{{ container_port }}
+        -e SPRING_PROFILES_ACTIVE={{ app_environment }}
+        --restart unless-stopped
+        {{ target_rollback_image }}
+      changed_when: true
+
+    - name: "=== Task 4: Validate Restored Health Check ==="
+      ansible.builtin.uri:
+        url: "http://localhost:{{ host_port }}/actuator/health"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: rollback_health
+      until: "rollback_health.status == 200 and 'UP' in rollback_health.content"
+      retries: 20
+      delay: 2
+
+    - name: "=== Task 5: Rollback Complete ==="
+      ansible.builtin.debug:
+        msg:
+          - "AUTOMATED ROLLBACK SUCCESSFUL!"
+          - "Active Container: {{ container_name }}"
+          - "Restored Image: {{ target_rollback_image }}"
+          - "Health Status: UP"
