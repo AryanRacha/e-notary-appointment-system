@@ -1,0 +1,11 @@
+target/
+frontend/node_modules/
+frontend/dist/
+.git/
+.gitignore
+*.log
+docs/
+jenkins/
+ansible/
+target/screenshots/
+.mvn/wrapper/maven-wrapper.jar.original
