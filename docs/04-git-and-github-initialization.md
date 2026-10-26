@@ -52,29 +52,33 @@ devops-project/
 ├── .mvn/
 │   └── wrapper/                    # Self-contained Maven wrapper configuration
 ├── docs/                           # Coursework milestone deliverables (0-14)
-│   ├── 0-init.md
-│   ├── 01-problem-definition-and-scope.md
-│   ├── 02-agile-planning-and-devops-workflow.md
-│   ├── 03-requirements-architecture-and-setup.md
-│   ├── 04-git-and-github-initialization.md
-│   └── devops-project-guidelines.ods
+├── frontend/                       # React 18 + Vite SPA application
+│   ├── src/
+│   │   ├── components/             # Reusable UI widgets & Navbar
+│   │   ├── pages/                  # Home, Login, Register, Slots, Bookings, Track
+│   │   ├── services/api.js         # Axios / Fetch client to Spring Boot REST
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
 ├── src/
 │   ├── main/
 │   │   ├── java/com/enotary/
 │   │   │   ├── ENotaryApplication.java
-│   │   │   └── controller/
-│   │   │       └── HomeController.java
+│   │   │   ├── controller/         # REST API & SPA Forwarding Controllers
+│   │   │   ├── model/              # JPA Domain Entities
+│   │   │   ├── repository/         # Spring Data JPA Repositories
+│   │   │   ├── service/            # Business Logic Services
+│   │   │   └── util/               # Security & Password Utilities
 │   │   └── resources/
 │   │       ├── application.properties
-│   │       └── templates/
-│   │           └── index.html
+│   │       └── static/             # Bundled React production assets (dist)
 │   └── test/
 │       └── java/com/enotary/
-│           └── ENotaryApplicationTests.java
 ├── AGENTS.md                       # Agentic pair-programming rules & guidelines
 ├── mise.toml                       # Tool version pinning (Java 17 LTS, Maven 3.9)
 ├── mvnw & mvnw.cmd                 # Executable Maven Wrapper scripts
-├── pom.xml                         # Project Object Model build definition
+├── pom.xml                         # Maven build definition (with frontend-maven-plugin)
 └── README.md                       # Primary repository documentation
 ```
 

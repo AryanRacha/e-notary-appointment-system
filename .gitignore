@@ -52,3 +52,12 @@ reports/
 screenshots/
 target/surefire-reports/
 target/failsafe-reports/
+
+# Node & Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+src/main/resources/static/assets/
+src/main/resources/static/index.html
+
+

@@ -4,7 +4,7 @@
 - **Project:** Containerized E-Notary Appointment System
 - **Owner:** Aryan Racha (Roll No: `23102C0055`)
 - **Primary Source of Truth:** `docs/devops-project-guidelines.ods` (Row 39)
-- **Tech Stack:** Java 17, Spring Boot 3, Maven, Thymeleaf, H2/PostgreSQL, Jenkins, Selenium WebDriver, Docker, Ansible.
+- **Tech Stack:** Java 17, Spring Boot 3, React.js (Vite SPA), Maven, H2/PostgreSQL, Jenkins, Selenium WebDriver, Docker, Ansible.
 
 ## Working Modes & Pedagogical Alignment
 1. **Interactive Pair-Programming & Learning**:

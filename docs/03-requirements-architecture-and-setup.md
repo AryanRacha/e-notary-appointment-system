@@ -70,25 +70,25 @@ flowchart LR
 
 ## 3. Application Architecture Diagram
 
-The system employs a classic, decoupled **3-Tier Layered Architecture**:
+The system employs a decoupled **Client-Server Single Page Application (SPA)** architecture, packaged into a single deployable artifact via Maven:
 
 ```mermaid
 flowchart TD
-    subgraph ClientTier["Client / Browser Tier"]
-        Browser["Web Browser (Desktop / Mobile)"]
-        Selenium["Selenium WebDriver Test Suite"]
+    subgraph ClientTier["Client / Browser Tier (React.js SPA)"]
+        Browser["React 18 / Vite SPA<br/>(Components, Client Routing, Axios/Fetch)"]
+        Selenium["Selenium WebDriver Test Suite<br/>(Automated End-to-End Tests)"]
     end
 
-    subgraph AppTier["Spring Boot Application Tier (Embedded / Standalone Tomcat)"]
-        subgraph PresentationLayer["Presentation Layer (Spring MVC)"]
-            AuthController["AuthController<br/>(/login, /register)"]
-            SlotController["SlotController<br/>(/slots)"]
-            BookingController["BookingController<br/>(/bookings, /dashboard)"]
-            HealthController["Actuator / Health<br/>(/actuator/health)"]
-            ThymeleafViews["Thymeleaf HTML5 Templates<br/>(Bootstrap 5 SSR)"]
+    subgraph AppTier["Spring Boot 3 Backend Tier (Embedded / Standalone Tomcat)"]
+        subgraph RESTControllers["REST API Layer (@RestController)"]
+            AuthAPI["AuthRestController<br/>(/api/auth/*)"]
+            SlotAPI["SlotRestController<br/>(/api/slots/*)"]
+            BookingAPI["BookingRestController<br/>(/api/bookings/*)"]
+            HealthAPI["Actuator / Health<br/>(/actuator/health)"]
+            StaticForwarder["SPA Forwarding Controller<br/>(Serves React index.html for client routes)"]
         end
 
-        subgraph ServiceLayer["Business Logic Layer"]
+        subgraph ServiceLayer["Business Logic Layer (@Service)"]
             UserService["UserService"]
             SlotService["SlotService"]
             BookingService["BookingService"]
@@ -107,9 +107,9 @@ flowchart TD
         Postgres["PostgreSQL Database<br/>(Containerized Prod)"]
     end
 
-    Browser --> PresentationLayer
-    Selenium --> PresentationLayer
-    PresentationLayer --> ServiceLayer
+    Browser -->|JSON REST over HTTP| RESTControllers
+    Selenium -->|Browser Actions| Browser
+    RESTControllers --> ServiceLayer
     ServiceLayer --> DataLayer
     DataLayer --> H2
     DataLayer --> Postgres
@@ -169,24 +169,35 @@ erDiagram
 
 ---
 
-## 5. API & Web Endpoints Specification
+## 5. REST API & SPA Endpoints Specification
 
-| HTTP Method | Route / Endpoint | Access Level | Description | Payload / Parameters |
-| :--- | :--- | :--- | :--- | :--- |
-| `GET` | `/` | Public | Home landing page with navigation and feature highlights | None |
-| `GET` | `/login` | Public | Authentication login page | None |
-| `GET` | `/register` | Public | User registration page (Client or Notary) | None |
-| `POST` | `/register` | Public | Process user registration | `fullName`, `email`, `password`, `role`, `phone` |
-| `GET` | `/slots` | Public / Auth | View available slots for selected notary and date | `notaryId`, `date` (YYYY-MM-DD) |
-| `POST` | `/slots/generate` | Notary | Generate availability slots for a date range | `notaryId`, `date`, `startTime`, `endTime` |
-| `GET` | `/bookings/new` | Client | Booking request form for a specific slot | `slotId` |
-| `POST` | `/bookings` | Client | Submit a booking request and generate reference | `slotId`, `documentType`, `notes` |
-| `GET` | `/bookings/track` | Public | Public appointment tracking search page | `refCode` (optional) |
-| `GET` | `/dashboard/client` | Client | Client's personal booking management dashboard | None (Session) |
-| `GET` | `/dashboard/notary` | Notary | Notary's schedule review and approval dashboard | None (Session) |
-| `POST` | `/bookings/{id}/confirm`| Notary | Confirm a requested appointment | `id` |
-| `POST` | `/bookings/{id}/cancel` | Client/Notary| Cancel an appointment with a mandatory reason | `id`, `cancellationReason` |
-| `GET` | `/actuator/health` | Public | Health status check for Jenkins & Ansible | None |
+### 5.1 Backend REST API Endpoints (`/api/*`)
+| HTTP Method | Route / Endpoint | Access Level | Description | Request Body / Query Params | Response JSON |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Public | Register client or notary | `{ fullName, email, password, role, phone, licenseNumber, officeAddress, specialization }` | `{ success: true, user: {...} }` |
+| `POST` | `/api/auth/login` | Public | Authenticate user | `{ email, password }` | `{ success: true, user: {...} }` |
+| `GET` | `/api/auth/current` | Public / Auth | Get currently logged-in user | None (Session/Header) | `{ user: {...} }` |
+| `POST` | `/api/auth/logout` | Auth | Invalidate session | None | `{ success: true }` |
+| `GET` | `/api/notaries` | Public | List all certified notaries | None | `[ { id, fullName, licenseNumber, ... } ]` |
+| `GET` | `/api/slots` | Public | Available slots for notary & date | `?notaryId=&date=` | `[ { id, slotDate, startTime, endTime, isBooked } ]` |
+| `POST` | `/api/slots/generate`| Notary | Generate availability slots | `{ notaryId, date, startTime, endTime }` | `[ { id, ... } ]` |
+| `POST` | `/api/bookings` | Client | Submit booking request | `{ slotId, documentType, notes }` | `{ referenceCode, status, ... }` |
+| `GET` | `/api/bookings/track/{code}` | Public | Public appointment tracking | Path variable `code` | `{ referenceCode, status, notary, slot, ... }` |
+| `GET` | `/api/bookings/my` | Client | Client's booking history | None (Session) | `[ { id, referenceCode, status, ... } ]` |
+| `GET` | `/api/bookings/notary` | Notary | Notary's incoming bookings | None (Session) | `[ { id, referenceCode, status, ... } ]` |
+| `POST` | `/api/bookings/{id}/confirm` | Notary | Confirm an appointment | Path variable `id` | `{ success: true, status: "CONFIRMED" }` |
+| `POST` | `/api/bookings/{id}/cancel` | Client/Notary | Cancel with reason | `{ cancellationReason }` | `{ success: true, status: "CANCELLED" }` |
+| `GET` | `/actuator/health` | Public | Health status check | None | `{ "status": "UP" }` |
+
+### 5.2 React Single Page Application (SPA) Routes
+- `/` — Landing page with hero banner, service overview, and quick links
+- `/login` — Sign-in interface
+- `/register` — Account registration with client/notary toggle
+- `/slots` — Interactive notary slot calendar and availability grid
+- `/bookings/new` — Booking request submission view
+- `/bookings/track` — Public status tracking search view
+- `/dashboard/client` — Client appointment management dashboard
+- `/dashboard/notary` — Notary appointment review and slot management dashboard
 
 ---
 
@@ -195,11 +206,11 @@ erDiagram
 | Layer | Selection | Justification |
 | :--- | :--- | :--- |
 | **Language** | Java 17 LTS | Modern LTS release with high stability, standard in enterprise and academic curricula. |
-| **Framework** | Spring Boot 3.2.x | Rapid development, built-in production metrics (`Actuator`), seamless database ORM. |
-| **Build Tool** | Apache Maven 3.9+ | Standardized dependency management; mandated for Jenkins build and Selenium test runs. |
-| **View Engine** | Thymeleaf + Bootstrap 5 | Zero frontend build step required (no webpack/vite overhead); deterministic DOM elements for Selenium. |
+| **Framework** | Spring Boot 3.2.x | Rapid development, built-in production metrics (`Actuator`), seamless database ORM and REST controllers. |
+| **Frontend SPA** | React 18 + Vite | Modern reactive component architecture, fast state updates, and TypeScript support. |
+| **Build & Packaging** | Apache Maven 3.9+ (`frontend-maven-plugin`) | Standardized lifecycle; builds React SPA and bundles production bundle into Spring Boot JAR/WAR for single-artifact deployment. |
 | **Persistence** | Spring Data JPA + Hibernate | Clean repository pattern with automatic query derivation and schema generation. |
-| **Testing** | JUnit 5, AssertJ, Selenium WebDriver | Comprehensive unit, integration, and UI testing running natively via `./mvnw test`. |
+| **Testing** | JUnit 5, MockMvc, Selenium WebDriver | Comprehensive unit, integration, and UI testing running natively via `./mvnw test`. |
 
 ---
 

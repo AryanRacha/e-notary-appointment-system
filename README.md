@@ -34,7 +34,7 @@
 | :--- | :--- | :--- |
 | **Backend Framework** | **Java 17 + Spring Boot 3** | Robust enterprise standard; native support for embedded/standalone Tomcat. |
 | **Build & Dependency Management** | **Apache Maven** | Lifecycle management (`compile`, `test`, `package`) mandated for Jenkins and Selenium. |
-| **Frontend UI** | **Thymeleaf + Bootstrap 5** | Server-Side Rendering (SSR) ensures reliable, deterministic Selenium WebDriver E2E test runs. |
+| **Frontend UI** | **React.js (Vite SPA) + Bootstrap 5** | Modern reactive UI bundled into Spring Boot static resources via Maven for single-artifact deployment. |
 | **Database** | **H2 (Dev/Test) + PostgreSQL (Prod)** | Fast in-memory database for local/CI tests; PostgreSQL for persistent containerized deployment. |
 | **Continuous Integration** | **Jenkins Declarative Pipeline** | Automated checkout, build, artifact archival, and test gates via `Jenkinsfile`. |
 | **Automated Testing** | **Selenium WebDriver + JUnit 5** | End-to-end browser automation executing directly through Maven. |

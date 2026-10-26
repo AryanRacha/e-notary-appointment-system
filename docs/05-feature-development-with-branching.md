@@ -19,7 +19,7 @@ Feature 1 establishes the core identity and security layer of the E-Notary syste
 - **Cryptographic Security:** Built `PasswordUtil` with salted SHA-256 password hashing and constant-time comparison to prevent timing attacks.
 - **Data Access:** Implemented `UserRepository` and `NotaryRepository` leveraging Spring Data derived queries (`findByEmail`, `existsByEmail`, `findByLicenseNumber`).
 - **Service Layer:** `UserService` enforces transactional safety, unique email constraints, and role-based notary profile creation.
-- **Web UI & Presentation:** `AuthController` paired with Thymeleaf views (`register.html`, `login.html`) featuring dynamic client-vs-notary form toggling and session management.
+- **Web & API Presentation:** Implemented `AuthRestController` exposing JSON endpoints (`/api/auth/register`, `/api/auth/login`, `/api/auth/current`, `/api/auth/logout`) and `AuthController` with React SPA views featuring dynamic client-vs-notary registration and session management.
 
 ---
 
