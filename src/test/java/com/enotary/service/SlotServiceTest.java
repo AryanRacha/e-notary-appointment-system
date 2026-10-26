@@ -32,6 +32,9 @@ class SlotServiceTest {
     private AppointmentSlotRepository slotRepository;
 
     @Autowired
+    private com.enotary.repository.BookingRequestRepository bookingRepository;
+
+    @Autowired
     private NotaryRepository notaryRepository;
 
     @Autowired
@@ -42,6 +45,7 @@ class SlotServiceTest {
 
     @BeforeEach
     void setUp() {
+        bookingRepository.deleteAll();
         slotRepository.deleteAll();
         notaryRepository.deleteAll();
         userRepository.deleteAll();
