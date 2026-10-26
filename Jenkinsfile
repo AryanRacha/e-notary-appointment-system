@@ -2,6 +2,11 @@ pipeline {
     agent any
 
     parameters {
+        string(
+            name: 'BRANCH_NAME',
+            defaultValue: 'develop',
+            description: 'Git branch to checkout and build'
+        )
         choice(
             name: 'ENVIRONMENT',
             choices: ['development', 'staging', 'production'],
