@@ -1,0 +1,76 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Continuous Integration Build Job for Containerized E-Notary Appointment System (Aryan Racha, Roll No: 23102C0055)</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>H/15 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!/bin/bash
+set -e
+
+echo "=========================================================="
+echo "  E-Notary Appointment System - Continuous Integration"
+echo "  Student: Aryan Racha | Roll No: 23102C0055"
+echo "  Trigger: SCM Scheduled Polling (H/15 * * * *)"
+echo "  Execution Time: $(date)"
+echo "=========================================================="
+
+WORKSPACE_DIR="$WORKSPACE"
+cd "$WORKSPACE_DIR"
+
+echo "[1/4] Cloning / Updating repository source..."
+if [ ! -d "e-notary-repo" ]; then
+    git clone /home/aryanracha/Coding/college/devops-project e-notary-repo
+else
+    cd e-notary-repo
+    git pull origin develop || git pull /home/aryanracha/Coding/college/devops-project develop
+    cd ..
+fi
+
+cd e-notary-repo
+git checkout develop
+git log -1 --oneline
+
+echo "[2/4] Compiling Java classes and building React SPA..."
+./mvnw clean compile
+
+echo "[3/4] Executing automated regression and unit test suite..."
+./mvnw test
+
+echo "[4/4] Packaging executable JAR artifact..."
+./mvnw package -DskipTests
+
+# Stage artifact for archival
+mkdir -p "$WORKSPACE_DIR/dist"
+cp target/e-notary-appointment-system-*.jar "$WORKSPACE_DIR/dist/"
+echo "Artifact successfully generated: $(ls -lh "$WORKSPACE_DIR/dist/")"
+      </command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>dist/*.jar</artifacts>
+      <allowEmptyArchive>false</allowEmptyArchive>
+      <onlyIfSuccessful>true</onlyIfSuccessful>
+      <fingerprint>true</fingerprint>
+      <defaultExcludes>true</defaultExcludes>
+      <caseSensitive>true</caseSensitive>
+      <followSymlinks>false</followSymlinks>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers/>
+</project>
