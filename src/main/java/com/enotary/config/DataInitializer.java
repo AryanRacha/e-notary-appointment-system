@@ -55,10 +55,13 @@ public class DataInitializer implements CommandLineRunner {
                     "555-0199"
             );
 
-            // Generate slots for tomorrow and day after
-            LocalDate tomorrow = LocalDate.now().plusDays(1);
-            LocalDate dayAfter = LocalDate.now().plusDays(2);
+            // Generate slots for today, tomorrow, and day after (robust across timezones)
+            LocalDate today = LocalDate.now();
+            LocalDate tomorrow = today.plusDays(1);
+            LocalDate dayAfter = today.plusDays(2);
 
+            slotService.generateSlots(notary1.getId(), today, LocalTime.of(9, 0), LocalTime.of(17, 0));
+            slotService.generateSlots(notary2.getId(), today, LocalTime.of(10, 0), LocalTime.of(16, 0));
             slotService.generateSlots(notary1.getId(), tomorrow, LocalTime.of(9, 0), LocalTime.of(17, 0));
             slotService.generateSlots(notary2.getId(), tomorrow, LocalTime.of(10, 0), LocalTime.of(16, 0));
             slotService.generateSlots(notary1.getId(), dayAfter, LocalTime.of(9, 0), LocalTime.of(13, 0));

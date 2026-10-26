@@ -5,9 +5,12 @@ export default function SlotView({ onSelectSlot, onNavigate, currentUser }) {
     const [notaries, setNotaries] = useState([]);
     const [selectedNotary, setSelectedNotary] = useState('');
     const [selectedDate, setSelectedDate] = useState(() => {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        return tomorrow.toISOString().split('T')[0];
+        const d = new Date();
+        d.setDate(d.getDate() + 1);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
     });
     const [slots, setSlots] = useState([]);
     const [loading, setLoading] = useState(false);
