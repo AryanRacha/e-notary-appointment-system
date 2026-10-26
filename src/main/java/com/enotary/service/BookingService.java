@@ -110,8 +110,7 @@ public class BookingService {
         int year = LocalDate.now().getYear();
         String code;
         do {
-            // INTENTIONAL DEFECT: Changed standardized prefix 'ENOT-' to 'DEFECT-'
-            StringBuilder sb = new StringBuilder("DEFECT-" + year + "-");
+            StringBuilder sb = new StringBuilder("ENOT-" + year + "-");
             for (int i = 0; i < 4; i++) {
                 sb.append(CHAR_POOL.charAt(RANDOM.nextInt(CHAR_POOL.length())));
             }
