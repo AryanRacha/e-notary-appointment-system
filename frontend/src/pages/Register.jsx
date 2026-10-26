@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
 
 export default function Register({ onNavigate }) {
@@ -14,6 +14,14 @@ export default function Register({ onNavigate }) {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!success) return;
+        const timer = setTimeout(() => {
+            onNavigate('login');
+        }, 1500);
+        return () => clearTimeout(timer);
+    }, [success, onNavigate]);
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -38,9 +46,6 @@ export default function Register({ onNavigate }) {
                 specialization: role === 'NOTARY' ? specialization : null
             });
             setSuccess('Account created successfully! Redirecting to sign in...');
-            setTimeout(() => {
-                onNavigate('login');
-            }, 1500);
         } catch (err) {
             setError(err.message || 'Registration failed');
         } finally {

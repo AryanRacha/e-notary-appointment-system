@@ -13,19 +13,19 @@ export default function Navbar({ currentUser, onNavigate, onLogout, currentPage 
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto align-items-center">
                         <li class="nav-item">
-                            <a class={`nav-link ${currentPage === 'home' ? 'active' : ''}`} href="#/" onClick={(e) => { e.preventDefault(); onNavigate('home'); }} id="nav-home">
+                            <button type="button" className={`nav-link ${currentPage === 'home' ? 'active' : ''}`} onClick={() => onNavigate('home')} id="nav-home">
                                 Home
-                            </a>
+                            </button>
                         </li>
                         <li class="nav-item">
-                            <a class={`nav-link ${currentPage === 'slots' ? 'active' : ''}`} href="#/slots" onClick={(e) => { e.preventDefault(); onNavigate('slots'); }} id="nav-slots">
+                            <button type="button" className={`nav-link ${currentPage === 'slots' ? 'active' : ''}`} onClick={() => onNavigate('slots')} id="nav-slots">
                                 Find Slots
-                            </a>
+                            </button>
                         </li>
                         <li class="nav-item">
-                            <a class={`nav-link ${currentPage === 'track' ? 'active' : ''}`} href="#/track" onClick={(e) => { e.preventDefault(); onNavigate('track'); }} id="nav-track">
+                            <button type="button" className={`nav-link ${currentPage === 'track' ? 'active' : ''}`} onClick={() => onNavigate('track')} id="nav-track">
                                 Track Status
-                            </a>
+                            </button>
                         </li>
                         {currentUser && currentUser.role === 'CLIENT' && (
                             <li class="nav-item">

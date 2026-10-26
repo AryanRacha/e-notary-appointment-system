@@ -9,11 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class HomeController {
 
     @GetMapping("/")
-    public String home(HttpSession session, Model model) {
-        model.addAttribute("appName", "Containerized E-Notary Appointment System");
-        model.addAttribute("developerName", "Aryan Racha");
-        model.addAttribute("rollNo", "23102C0055");
-        model.addAttribute("currentUser", session.getAttribute("currentUser"));
-        return "index";
+    public String home() {
+        return "forward:/index.html";
     }
 }

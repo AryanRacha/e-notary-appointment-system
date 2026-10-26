@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -27,9 +28,7 @@ class ENotaryApplicationTests {
     void homePageReturnsOkAndContainsProjectTitle() throws Exception {
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Containerized E-Notary Appointment System")))
-                .andExpect(content().string(containsString("Aryan Racha")))
-                .andExpect(content().string(containsString("23102C0055")));
+                .andExpect(forwardedUrl("/index.html"));
     }
 
     @Test
