@@ -13,19 +13,41 @@
           <trim>true</trim>
         </hudson.model.StringParameterDefinition>
         <hudson.model.ChoiceParameterDefinition>
+          <name>DEPLOY_TARGET</name>
+          <description>Deployment Target Architecture (Docker Container vs Standalone Tomcat JAR)</description>
+          <choices class="java.util.Arrays$ArrayList">
+            <a class="string-array">
+              <string>docker</string>
+              <string>standalone</string>
+            </a>
+          </choices>
+        </hudson.model.ChoiceParameterDefinition>
+        <hudson.model.ChoiceParameterDefinition>
           <name>ENVIRONMENT</name>
           <description>Target Deployment Environment</description>
           <choices class="java.util.Arrays$ArrayList">
             <a class="string-array">
-              <string>development</string>
-              <string>staging</string>
               <string>production</string>
+              <string>staging</string>
+              <string>development</string>
             </a>
           </choices>
         </hudson.model.ChoiceParameterDefinition>
         <hudson.model.StringParameterDefinition>
+          <name>REGISTRY_URL</name>
+          <description>Container Image Registry URL</description>
+          <defaultValue>localhost:5000</defaultValue>
+          <trim>true</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DOCKER_PORT</name>
+          <description>Host Port for Containerized Service Deployment</description>
+          <defaultValue>8082</defaultValue>
+          <trim>false</trim>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
           <name>SERVER_PORT</name>
-          <description>HTTP Port for Application Deployment (Parameterized Environment Setting)</description>
+          <description>HTTP Port for Standalone Tomcat Application Deployment</description>
           <defaultValue>8080</defaultValue>
           <trim>false</trim>
         </hudson.model.StringParameterDefinition>
