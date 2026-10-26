@@ -92,7 +92,7 @@ pipeline {
                     fi
 
                     # Launch the packaged application in background with parameterized port
-                    nohup java -Dserver.port=${SERVER_PORT} -Dspring.profiles.active=${ENVIRONMENT} -jar target/e-notary-appointment-system-*.jar > app-deployment.log 2>&1 &
+                    BUILD_ID=dontKillMe JENKINS_NODE_COOKIE=dontKillMe nohup java -Dserver.port=${SERVER_PORT} -Dspring.profiles.active=${ENVIRONMENT} -jar target/e-notary-appointment-system-*.jar > app-deployment.log 2>&1 &
                     
                     # Health check validation
                     echo "Validating deployment health on http://localhost:${SERVER_PORT}/actuator/health..."
@@ -116,11 +116,6 @@ pipeline {
         failure {
             echo "Pipeline failed! Inspect logs and test reports."
             archiveArtifacts artifacts: 'app-deployment.log', allowEmptyArchive: true
-        }
-        always {
-            cleanWs(cleanWhenNotBuilt: false,
-                    deleteDirs: false,
-                    notFailBuild: true)
         }
     }
 }
